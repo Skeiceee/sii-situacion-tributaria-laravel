@@ -62,12 +62,6 @@ class ApiSiiController extends Controller
 
         $res = $client->post('https://zeus.sii.cl/cvc_cgi/stc/getstc', [
             'form_params' => [
-                // 'RUT' => 19330502,
-                // 'DV' => 4,
-                // 'RUT' => 77354884,
-                // 'DV' => 6,
-                // 'RUT' => 12145934,
-                // 'DV' => 5,
                 'RUT' => $rut,
                 'DV' => $dv,
                 'PRG' => 'STC',
@@ -83,13 +77,8 @@ class ApiSiiController extends Controller
         $html = (string) $res->getBody();
 
         $dom = new DOMDocument();
-        // The @ in front of $domDoc will suppress any warnings
         $domHtml = @$dom->loadHTML($html);
-
-        //discard white space 
         $dom->preserveWhiteSpace = false;
-
-        //the table by its tag name
         $xpath = new DOMXPath($dom);
 
         $razon_social = "";
@@ -136,15 +125,14 @@ class ApiSiiController extends Controller
 
             try{
                 $nodes = $xpath->query('/html/body/div/table[1]/tr');
-                // dd($nodes[1]->nodeValue);
                 $actividades = [];
 
                 $i = 0;
                 foreach ($nodes as $node) {
-                    if ($i == 0)  // is true for the first entry
+                    if ($i == 0)
                     { 
-                      $i++;       // increment counter
-                      continue;   // continue with next entry
+                      $i++;
+                      continue;
                     }
 
                     $glosa = trim($xpath->query('./td[1]/font', $node)[0]->nodeValue);
@@ -178,15 +166,14 @@ class ApiSiiController extends Controller
 
             try{
                 $nodes = $xpath->query('/html/body/div/table[3]/tr');
-                // dd($nodes[1]->nodeValue);
                 $documentos_timbrados = [];
 
                 $i = 0;
                 foreach ($nodes as $node) {
-                    if ($i == 0)  // is true for the first entry
+                    if ($i == 0)  
                     { 
-                      $i++;       // increment counter
-                      continue;   // continue with next entry
+                      $i++;
+                      continue;
                     }
 
                     $documento = trim($xpath->query('./td[1]/font', $node)[0]->nodeValue);
@@ -375,14 +362,14 @@ class ApiSiiController extends Controller
         if($status == 200){
 
             $data = $resultadoDTE->getData();
+            
             dd($data, $status);
 
             $dte_processed = 1;
             $dte_data = json_encode($data);
 
-            if ($data->inicio_actividades){ // rut tiene inicio actividades?
-                $categoria = $data->actividades[0]->categoria; // obtengo categoria de giro
-
+            if ($data->inicio_actividades){
+                $categoria = $data->actividades[0]->categoria;
                 if ($categoria == 1) // si es categoria tipo 1 = pyme, si es 2 = persona con boletas
                     $dte_pyme = 1;
                 else 
